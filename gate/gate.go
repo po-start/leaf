@@ -6,9 +6,9 @@ import (
 	"reflect"
 	"time"
 
-	"github.com/name5566/leaf/chanrpc"
-	// "github.com/name5566/leaf/log"
-	"github.com/name5566/leaf/network"
+	"github.com/po-start/leaf/chanrpc"
+	// "github.com/po-start/leaf/log"
+	"github.com/po-start/leaf/network"
 )
 
 type Gate struct {

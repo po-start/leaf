@@ -1,10 +1,10 @@
 package module
 
 import (
-	"github.com/name5566/leaf/chanrpc"
-	"github.com/name5566/leaf/console"
-	"github.com/name5566/leaf/go"
-	"github.com/name5566/leaf/timer"
+	"github.com/po-start/leaf/chanrpc"
+	"github.com/po-start/leaf/console"
+	"github.com/po-start/leaf/go"
+	"github.com/po-start/leaf/timer"
 	"time"
 )
 
