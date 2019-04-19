@@ -38,7 +38,7 @@ func (server *TCPServer) init() {
 	}
 
 	if server.MaxConnNum <= 0 {
-		server.MaxConnNum = 100
+//		server.MaxConnNum = 100
 		log.Release("invalid MaxConnNum, reset to %v", server.MaxConnNum)
 	}
 	if server.PendingWriteNum <= 0 {
@@ -53,7 +53,7 @@ func (server *TCPServer) init() {
 	server.conns = make(ConnSet)
 
 	// msg parser
-	msgParser := NewMsgParser()
+msgParser := NewMsgParser()
 	msgParser.SetMsgLen(server.LenMsgLen, server.MinMsgLen, server.MaxMsgLen)
 	msgParser.SetByteOrder(server.LittleEndian)
 	server.msgParser = msgParser
@@ -80,31 +80,41 @@ func (server *TCPServer) run() {
 				time.Sleep(tempDelay)
 				continue
 			}
+			log.Release("accept error: %v", err)
 			return
 		}
 		tempDelay = 0
 
 		server.mutexConns.Lock()
-		if len(server.conns) >= server.MaxConnNum {
-			server.mutexConns.Unlock()
-			conn.Close()
-			log.Debug("too many connections")
-			continue
+		if server.MaxConnNum > 0 {
+			if len(server.conns) >= server.MaxConnNum {
+				log.Release("too many connections")
+				server.mutexConns.Unlock()
+				conn.Close()
+				continue
+			}
+		} else {
+			l := len(server.conns)
+			log.Release("server.conns sum: %v", l)
 		}
 		server.conns[conn] = struct{}{}
 		server.mutexConns.Unlock()
 
 		server.wgConns.Add(1)
 
+log.Release("tcp conn: 11111111")
 		tcpConn := newTCPConn(conn, server.PendingWriteNum, server.msgParser)
 		agent := server.NewAgent(tcpConn)
+log.Release("tcp conn: 22222222")
 		go func() {
 			agent.Run()
-
+log.Release("tcp conn: 33333333")
 			// cleanup
 			tcpConn.Close()
 			server.mutexConns.Lock()
+			log.Release("cleanup before conns sum: %v", len(server.conns))
 			delete(server.conns, conn)
+			log.Release("cleanup after conns sum: %v", len(server.conns))
 			server.mutexConns.Unlock()
 			agent.OnClose()
 

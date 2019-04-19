@@ -1,12 +1,14 @@
 package gate
 
 import (
-	"github.com/name5566/leaf/chanrpc"
-	"github.com/name5566/leaf/log"
-	"github.com/name5566/leaf/network"
+	"fmt"
 	"net"
 	"reflect"
 	"time"
+
+	"github.com/name5566/leaf/chanrpc"
+	// "github.com/name5566/leaf/log"
+	"github.com/name5566/leaf/network"
 )
 
 type Gate struct {
@@ -93,19 +95,18 @@ func (a *agent) Run() {
 	for {
 		data, err := a.conn.ReadMsg()
 		if err != nil {
-			log.Debug("read message: %v", err)
+			fmt.Printf("read message: %v \n", err)
 			break
 		}
-
 		if a.gate.Processor != nil {
 			msg, err := a.gate.Processor.Unmarshal(data)
 			if err != nil {
-				log.Debug("unmarshal message error: %v", err)
+				fmt.Printf("unmarshal message error: %v \n", err)
 				break
 			}
 			err = a.gate.Processor.Route(msg, a)
 			if err != nil {
-				log.Debug("route message error: %v", err)
+				fmt.Printf("route message error: %v \n", err)
 				break
 			}
 		}
@@ -116,23 +117,25 @@ func (a *agent) OnClose() {
 	if a.gate.AgentChanRPC != nil {
 		err := a.gate.AgentChanRPC.Call0("CloseAgent", a)
 		if err != nil {
-			log.Error("chanrpc error: %v", err)
+			fmt.Printf("chanrpc error: %v \n", err)
 		}
 	}
 }
 
-func (a *agent) WriteMsg(msg interface{}) {
+func (a *agent) WriteMsg(msg interface{}) error {
 	if a.gate.Processor != nil {
 		data, err := a.gate.Processor.Marshal(msg)
 		if err != nil {
-			log.Error("marshal message %v error: %v", reflect.TypeOf(msg), err)
-			return
+			fmt.Printf("marshal message %v error: %v \n", reflect.TypeOf(msg), err)
+			return nil
 		}
 		err = a.conn.WriteMsg(data...)
 		if err != nil {
-			log.Error("write message %v error: %v", reflect.TypeOf(msg), err)
+			fmt.Printf("write message %v error: %v \n", reflect.TypeOf(msg), err)
+			return err
 		}
 	}
+	return nil
 }
 
 func (a *agent) LocalAddr() net.Addr {

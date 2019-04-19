@@ -25,11 +25,13 @@ func newTCPConn(conn net.Conn, pendingWriteNum int, msgParser *MsgParser) *TCPCo
 	go func() {
 		for b := range tcpConn.writeChan {
 			if b == nil {
+				log.Release("conn ERR: %v", b)
 				break
 			}
 
 			_, err := conn.Write(b)
 			if err != nil {
+				log.Release("conn ERROR: %v", err)
 				break
 			}
 		}

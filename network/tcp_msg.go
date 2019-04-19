@@ -1,6 +1,7 @@
 package network
 
 import (
+//	"fmt"
 	"encoding/binary"
 	"errors"
 	"io"
@@ -97,8 +98,9 @@ func (p *MsgParser) Read(conn *TCPConn) ([]byte, error) {
 		return nil, errors.New("message too short")
 	}
 
+	msgData := make([]byte, msgLen-2)
+
 	// data
-	msgData := make([]byte, msgLen)
 	if _, err := io.ReadFull(conn, msgData); err != nil {
 		return nil, err
 	}
@@ -113,6 +115,8 @@ func (p *MsgParser) Write(conn *TCPConn, args ...[]byte) error {
 	for i := 0; i < len(args); i++ {
 		msgLen += uint32(len(args[i]))
 	}
+	
+	msgLen += uint32(p.lenMsgLen) 
 
 	// check len
 	if msgLen > p.maxMsgLen {
@@ -121,7 +125,7 @@ func (p *MsgParser) Write(conn *TCPConn, args ...[]byte) error {
 		return errors.New("message too short")
 	}
 
-	msg := make([]byte, uint32(p.lenMsgLen)+msgLen)
+	msg := make([]byte, msgLen)
 
 	// write len
 	switch p.lenMsgLen {
@@ -147,6 +151,8 @@ func (p *MsgParser) Write(conn *TCPConn, args ...[]byte) error {
 		copy(msg[l:], args[i])
 		l += len(args[i])
 	}
+
+//	fmt.Printf("%+v\n",msg)
 
 	conn.Write(msg)
 

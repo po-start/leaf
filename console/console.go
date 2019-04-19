@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"github.com/name5566/leaf/conf"
 	"github.com/name5566/leaf/network"
+	"github.com/name5566/leaf/log"
 	"math"
 	"strconv"
 	"strings"
@@ -51,6 +52,7 @@ func (a *Agent) Run() {
 
 		line, err := a.reader.ReadString('\n')
 		if err != nil {
+			log.Release("Run ERR-1: %v", err)
 			break
 		}
 		line = strings.TrimSuffix(line[:len(line)-1], "\r")
@@ -60,12 +62,14 @@ func (a *Agent) Run() {
 			continue
 		}
 		if args[0] == "quit" {
+			log.Release("Run ERR-2: quit" )
 			break
 		}
 		var c Command
 		for _, _c := range commands {
 			if _c.name() == args[0] {
 				c = _c
+				log.Release("Run ERR-3: %+v", c)
 				break
 			}
 		}
